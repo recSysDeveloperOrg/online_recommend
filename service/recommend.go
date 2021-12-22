@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	. "recommend/constant"
 	"recommend/idl/gen/recommend"
 	"strings"
@@ -15,11 +14,12 @@ type RecommendContext struct {
 	req                  *recommend.RecommendReq
 	resp                 *recommend.RecommendResp
 	errCode              *ErrorCode
-	userObjectID         primitive.ObjectID
 	totalRatingCnt       int64
-	uninterestedMovieIds map[primitive.ObjectID]struct{}
-	uninterestedTagIds   map[primitive.ObjectID]struct{}
-	viewLogs             []primitive.ObjectID
+	uninterestedMovieIds map[string]struct{}
+	uninterestedTagIds   map[string]struct{}
+	viewLogs             []string
+
+	recommendMovies map[RecommendSourceType][]*RecommendPair
 }
 
 type recommendService struct {
@@ -41,28 +41,29 @@ func (s *recommendService) DoService(ctx *RecommendContext) {
 	if s.checkParams(ctx); ctx.errCode != nil {
 		return
 	}
+	s.doRecommend(ctx)
 }
 
 func (*recommendService) checkParams(ctx *RecommendContext) {
 	if len(strings.TrimSpace(ctx.req.UserId)) == 0 {
-		ctx.errCode = BuildErrCode("没有用户ID信息", ParamErr)
+		ctx.errCode = BuildErrCode("没有用户ID信息", RetParamsErr)
 		return
 	}
 	if ctx.req.Page < 0 {
-		ctx.errCode = BuildErrCode(fmt.Sprintf("Page:%d", ctx.req.Page), ParamErr)
+		ctx.errCode = BuildErrCode(fmt.Sprintf("Page:%d", ctx.req.Page), RetParamsErr)
 		return
 	}
 	if ctx.req.Offset < 0 {
-		ctx.errCode = BuildErrCode(fmt.Sprintf("Offset:%d", ctx.req.Page), ParamErr)
+		ctx.errCode = BuildErrCode(fmt.Sprintf("Offset:%d", ctx.req.Page), RetParamsErr)
 	}
 }
 
-func (*recommendService) collectData(ctx *RecommendContext) {
+func (*recommendService) doRecommend(ctx *RecommendContext) {
 
 }
 
 func (*recommendService) buildResponse(ctx *RecommendContext) {
-	errCode := Success
+	errCode := RetSuccess
 	if ctx.errCode != nil {
 		errCode = ctx.errCode
 	}

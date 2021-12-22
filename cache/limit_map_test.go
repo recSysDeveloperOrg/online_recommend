@@ -34,8 +34,8 @@ func TestLimitMap_Add(t *testing.T) {
 		if testCase.opType == opTypeWrite {
 			lm.Add(testCase.key, testCase.value)
 		} else {
-			if testCase.shouldFind != lm.CheckExist(testCase.key, testCase.value) {
-				t.Fatalf("value %s failed\n", testCase.value)
+			if testCase.shouldFind != lm.CheckItemExists(testCase.key, testCase.value) {
+				t.Fatalf("Value %s failed\n", testCase.value)
 			}
 		}
 	}

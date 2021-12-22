@@ -72,10 +72,36 @@ func (l *LimitMap) Add(k, v interface{}) {
 	l.m[k].add(v)
 }
 
-func (l *LimitMap) CheckExist(k, v interface{}) bool {
+func (l *LimitMap) CheckItemExists(k, v interface{}) bool {
 	if _, ok := l.m[k]; !ok {
 		return false
 	}
 
 	return l.m[k].find(v)
+}
+
+func (l *LimitMap) CheckKeyExists(k interface{}) bool {
+	_, ok := l.m[k]
+	return ok
+}
+
+func (l *LimitMap) GetItems(k interface{}) []interface{} {
+	if !l.CheckKeyExists(k) {
+		return nil
+	}
+	return l.m[k].array
+}
+
+func (l *LimitMap) GetItemsAsString(k interface{}) []string {
+	items := l.GetItems(k)
+	itemStrings := make([]string, len(items))
+	for i := 0; i < len(items); i++ {
+		itemStr, ok := items[i].(string)
+		if !ok {
+			return nil
+		}
+		itemStrings[i] = itemStr
+	}
+
+	return itemStrings
 }

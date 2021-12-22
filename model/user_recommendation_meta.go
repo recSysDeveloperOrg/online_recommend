@@ -97,3 +97,7 @@ func (d *UserRecommendationMetaDao) AddViewLog(userID string, movieID string) er
 	d.m.Add(userID, movieID)
 	return nil
 }
+
+func (d *UserRecommendationMetaDao) GetViewLog(userID string) []string {
+	return d.m.GetItemsAsString(userID)
+}

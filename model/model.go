@@ -20,6 +20,7 @@ const (
 	CollectionTag                    = "tag"
 	CollectionTagUser                = "tag_user"
 	CollectionTagMovie               = "tag_movie"
+	CollectionMovieSimMat            = "movie_sim_mat"
 	CollectionUserRatingMeta         = "user_rating_meta"
 	CollectionUserRecommendationMeta = "user_recommendation_meta"
 )
