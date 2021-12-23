@@ -31,6 +31,17 @@ func NewRecommendService() *recommendService {
 	return service
 }
 
+func NewRecommendContext(ctx context.Context, req *recommend.RecommendReq) *RecommendContext {
+	return &RecommendContext{
+		Ctx: ctx,
+		Req: req,
+		Resp: &recommend.RecommendResp{
+			BaseResp: &recommend.BaseResp{},
+		},
+		RecommendMovies: make(map[recommend.RecommendSourceType][]*RecommendPair),
+	}
+}
+
 func (s *recommendService) DoService(ctx *RecommendContext) {
 	defer s.buildResponse(ctx)
 	if s.checkParams(ctx); ctx.ErrCode != nil {

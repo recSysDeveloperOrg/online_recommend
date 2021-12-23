@@ -4,6 +4,7 @@ import (
 	. "recommend/constant"
 	. "recommend/idl/gen/recommend"
 	"recommend/model"
+	"sync"
 )
 
 type RecommendSourceSimMat struct {
@@ -15,6 +16,17 @@ const (
 )
 
 var sourceItemCFUserID2RecommendPairCache = make(map[string][]*RecommendPair)
+
+var recommendSourceSimMat *RecommendSourceSimMat
+var recommendSourceSimMatOnce sync.Once
+
+func NewRecommendSourceSimMat() *RecommendSourceSimMat {
+	recommendSourceSimMatOnce.Do(func() {
+		recommendSourceSimMat = &RecommendSourceSimMat{}
+	})
+
+	return recommendSourceSimMat
+}
 
 func (r *RecommendSourceSimMat) RequestRecommend(ctx *RecommendContext) {
 	if r.isUserInColdStartState(ctx) {

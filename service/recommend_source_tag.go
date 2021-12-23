@@ -5,16 +5,28 @@ import (
 	. "recommend/constant"
 	. "recommend/idl/gen/recommend"
 	"recommend/model"
+	"sync"
 )
 
 type RecommendSourceTag struct {
 }
 
+var sourceTagUserID2RecommendPairCache = make(map[string][]*RecommendPair)
+
+var recommendSourceTag *RecommendSourceTag
+var recommendSourceTagOnce sync.Once
+
 const (
-	KMaxTag = 100 // 只使用该用户排名前100的标签进行推荐
+	KMaxTag = 10 // 只使用该用户排名前10的标签进行推荐
 )
 
-var sourceTagUserID2RecommendPairCache = make(map[string][]*RecommendPair)
+func NewRecommendSourceTag() *RecommendSourceTag {
+	recommendSourceTagOnce.Do(func() {
+		recommendSourceTag = &RecommendSourceTag{}
+	})
+
+	return recommendSourceTag
+}
 
 func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 	offset, size := ctx.Req.Page*ctx.Req.Offset, ctx.Req.Offset
@@ -27,6 +39,9 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 		ctx.Req.UserId, KMaxTag)
 	if err != nil {
 		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	if len(kMaxTags) == 0 {
 		return
 	}
 

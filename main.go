@@ -14,9 +14,5 @@ func main() {
 		panic(err)
 	}
 
-	rsItemCF := &service.RecommendSourceSimMat{}
-	rsLog := &service.RecommendSourceLog{}
-	rsTag := &service.RecommendSourceTag{}
-	rsTopK := &service.RecommendSourceTopK{}
-	service.AppendRecommendSource(rsItemCF, rsLog, rsTag, rsTopK)
+	service.InitService()
 }

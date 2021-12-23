@@ -4,12 +4,24 @@ import (
 	. "recommend/constant"
 	. "recommend/idl/gen/recommend"
 	"recommend/model"
+	"sync"
 )
 
 type RecommendSourceLog struct {
 }
 
 var sourceLogUserID2RecommendPairsCache = make(map[string][]*RecommendPair)
+
+var recommendSourceLog *RecommendSourceLog
+var recommendSourceLogOnce sync.Once
+
+func NewRecommendSourceLog() *RecommendSourceLog {
+	recommendSourceLogOnce.Do(func() {
+		recommendSourceLog = &RecommendSourceLog{}
+	})
+
+	return recommendSourceLog
+}
 
 func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
 	offset, size := ctx.Req.Page*ctx.Req.Offset, ctx.Req.Offset

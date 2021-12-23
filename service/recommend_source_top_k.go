@@ -13,13 +13,25 @@ type RecommendSourceTopK struct {
 var topKMovieCacheSync = sync.RWMutex{}
 var topKMovieCache []*RecommendPair
 
+var recommendSourceTopK *RecommendSourceTopK
+var recommendSourceTopKOnce sync.Once
+
+func NewRecommendSourceTopK() *RecommendSourceTopK {
+	recommendSourceTopKOnce.Do(func() {
+		recommendSourceTopK = &RecommendSourceTopK{}
+	})
+
+	return recommendSourceTopK
+}
+
 func (*RecommendSourceTopK) RequestRecommend(ctx *RecommendContext) {
 	topKMovieCacheSync.RLock()
 	defer topKMovieCacheSync.RUnlock()
-	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TOP_K] = topKMovieCache[:]
+	offset, size := ctx.Req.Page*ctx.Req.Offset, ctx.Req.Offset
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TOP_K] = topKMovieCache[offset : offset+size]
 }
 
-func (*RecommendSourceTopK) refreshMovieCache() {
+func (*RecommendSourceTopK) RefreshMovieCache() {
 	topKMovieCacheSync.Lock()
 	defer topKMovieCacheSync.Unlock()
 	topKMovies, err := model.NewMovieDao().FindTopKMovies(context.Background(), MaxRecommend)

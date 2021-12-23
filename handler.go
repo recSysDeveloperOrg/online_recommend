@@ -14,10 +14,7 @@ type RecommendServer struct {
 func (*RecommendServer) Recommend(ctx context.Context, req *recommend.RecommendReq) (
 	*recommend.RecommendResp, error) {
 	log.Printf("%+v", req)
-	rCtx := &service.RecommendContext{
-		Ctx: ctx,
-		Req: req,
-	}
+	rCtx := service.NewRecommendContext(ctx, req)
 	service.NewRecommendService().DoService(rCtx)
 
 	log.Printf("%+v", rCtx.Resp)

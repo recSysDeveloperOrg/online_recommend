@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"recommend/cache"
 	"sync"
 )
@@ -59,7 +61,10 @@ func (*UserRecommendationMetaDao) FindUninterestedSet(ctx context.Context, userI
 	if err := GetClient().Collection(CollectionUserRecommendationMeta).
 		FindOne(ctx, bson.D{{"user_id", userObjectId}}, options.FindOne().SetProjection(
 			bson.D{{fmt.Sprintf("uninterested_%s_ids", typeName), 1}})).Decode(&meta); err != nil {
-		return nil, err
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			log.Printf("no uninterested %s for userID %s", typeName, userID)
+			return nil, nil
+		}
 	}
 
 	idList := meta.UninterestedMovies
