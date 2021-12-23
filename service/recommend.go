@@ -5,6 +5,7 @@ import (
 	"fmt"
 	. "recommend/constant"
 	"recommend/idl/gen/recommend"
+	"recommend/model"
 	"strings"
 	"sync"
 )
@@ -17,9 +18,12 @@ type RecommendContext struct {
 	totalRatingCnt       int64
 	uninterestedMovieIds map[string]struct{}
 	uninterestedTagIds   map[string]struct{}
+	ratedMovies          map[string]struct{}
+	kMaxTags             []*model.TagUser
+	kMaxTagID2Movies     map[string][]*model.TagMovie
 	viewLogs             []string
 
-	recommendMovies map[RecommendSourceType][]*RecommendPair
+	recommendMovies map[recommend.RecommendSourceType][]*RecommendPair
 }
 
 type recommendService struct {

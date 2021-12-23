@@ -15,17 +15,10 @@ type RecommendPair struct {
 
 type float64Comparator float64
 
-type RecommendSourceType uint8
-
 // RatingFunc 评分计算函数，sourceID表示推荐源ID（电影/tag），targetID是推荐的电影ID，weight是初始推荐权重
 type RatingFunc func(sourceID, targetID string, weight float64) float64
 
 const (
-	RecommendSourceTypeItemCF = iota
-	RecommendSourceTypeTag
-	RecommendSourceTypeLog
-	RecommendSourceTypeTopK
-
 	MaxRecommend = 500 // 固定最大的推荐数量
 )
 
@@ -77,6 +70,7 @@ func maxMovieWeight(movieWeights []*model.MovieWeights, pointers []int, ratingFu
 	return maxMovieWeight, maxSourceID
 }
 
+// TODO sync this map
 func tryCache(cache map[string][]*RecommendPair, userID string, offset, size int64) ([]*RecommendPair, bool) {
 	if cachedPairs, ok := cache[userID]; ok {
 		if offset+size < int64(len(cachedPairs)) {

@@ -2,8 +2,7 @@ package service
 
 import (
 	"recommend/cache"
-	. "recommend/constant"
-	"recommend/model"
+	. "recommend/idl/gen/recommend"
 )
 
 type RecommendSourceTag struct {
@@ -18,25 +17,14 @@ var sourceTagUserID2RecommendPairCache = make(map[string][]*RecommendPair)
 func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 	offset, size := ctx.req.Page*ctx.req.Offset, ctx.req.Offset
 	if recPair, hit := tryCache(sourceTagUserID2RecommendPairCache, ctx.req.UserId, offset, size); hit {
-		ctx.recommendMovies[RecommendSourceTypeTag] = recPair
-		return
-	}
-
-	kMaxTags, err := model.NewTagUserDao().FindKMaxUserTags(ctx.ctx, ctx.req.UserId, KMaxTag)
-	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recPair
 		return
 	}
 
 	var heap *cache.Heap
 	addedMovies := make(map[string]struct{})
-	for _, kMaxTag := range kMaxTags {
-		kMaxTagMovies, err := model.NewTagMovieDao().FindKMaxByTagID(ctx.ctx, kMaxTag.TagID, MaxRecommend)
-		if err != nil {
-			ctx.errCode = BuildErrCode(err, RetReadRepoErr)
-			return
-		}
-
+	for _, kMaxTag := range ctx.kMaxTags {
+		kMaxTagMovies := ctx.kMaxTagID2Movies[kMaxTag.TagID]
 		if heap == nil {
 			initNodes := make([]*cache.HeapNode, len(kMaxTagMovies))
 			for i, kMaxTagMovie := range kMaxTagMovies {
@@ -70,7 +58,7 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 
 	recommendPairs := interface2RecommendPairs(heap.PopValues())
 	sourceTagUserID2RecommendPairCache[ctx.req.UserId] = recommendPairs
-	ctx.recommendMovies[RecommendSourceTypeTag] = recommendPairs[offset : offset+size]
+	ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recommendPairs[offset : offset+size]
 }
 
 func getTagWeight(userTagTimes int, movieTagTimes int64) float64Comparator {
