@@ -22,6 +22,12 @@ const (
 	MaxRecommend = 500 // 固定最大的推荐数量
 )
 
+var RecommendSources []RecommendSource
+
+func AppendRecommendSource(source RecommendSource) {
+	RecommendSources = append(RecommendSources, source)
+}
+
 func (f float64Comparator) Compare(comparator interface{}) int {
 	if another, ok := comparator.(float64); ok {
 		if float64(f) < another {

@@ -16,7 +16,7 @@ var topKMovieCache []*RecommendPair
 func (*RecommendSourceTopK) RequestRecommend(ctx *RecommendContext) {
 	topKMovieCacheSync.RLock()
 	defer topKMovieCacheSync.RUnlock()
-	ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TOP_K] = topKMovieCache[:]
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TOP_K] = topKMovieCache[:]
 }
 
 func (*RecommendSourceTopK) refreshMovieCache() {

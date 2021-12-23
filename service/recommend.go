@@ -10,12 +10,12 @@ import (
 )
 
 type RecommendContext struct {
-	ctx     context.Context
-	req     *recommend.RecommendReq
-	resp    *recommend.RecommendResp
-	errCode *ErrorCode
+	Ctx     context.Context
+	Req     *recommend.RecommendReq
+	Resp    *recommend.RecommendResp
+	ErrCode *ErrorCode
 
-	recommendMovies map[recommend.RecommendSourceType][]*RecommendPair
+	RecommendMovies map[recommend.RecommendSourceType][]*RecommendPair
 }
 
 type recommendService struct {
@@ -34,35 +34,50 @@ func NewRecommendService() *recommendService {
 
 func (s *recommendService) DoService(ctx *RecommendContext) {
 	defer s.buildResponse(ctx)
-	if s.checkParams(ctx); ctx.errCode != nil {
+	if s.checkParams(ctx); ctx.ErrCode != nil {
 		return
 	}
 	s.doRecommend(ctx)
 }
 
 func (*recommendService) checkParams(ctx *RecommendContext) {
-	if len(strings.TrimSpace(ctx.req.UserId)) == 0 {
-		ctx.errCode = BuildErrCode("没有用户ID信息", RetParamsErr)
+	if len(strings.TrimSpace(ctx.Req.UserId)) == 0 {
+		ctx.ErrCode = BuildErrCode("没有用户ID信息", RetParamsErr)
 		return
 	}
-	if ctx.req.Page < 0 {
-		ctx.errCode = BuildErrCode(fmt.Sprintf("Page:%d", ctx.req.Page), RetParamsErr)
+	if ctx.Req.Page < 0 {
+		ctx.ErrCode = BuildErrCode(fmt.Sprintf("Page:%d", ctx.Req.Page), RetParamsErr)
 		return
 	}
-	if ctx.req.Offset < 0 {
-		ctx.errCode = BuildErrCode(fmt.Sprintf("Offset:%d", ctx.req.Page), RetParamsErr)
+	if ctx.Req.Offset < 0 {
+		ctx.ErrCode = BuildErrCode(fmt.Sprintf("Offset:%d", ctx.Req.Page), RetParamsErr)
 	}
 }
 
 func (*recommendService) doRecommend(ctx *RecommendContext) {
-
+	for _, recommendSource := range RecommendSources {
+		recommendSource.RequestRecommend(ctx)
+		if len(ctx.RecommendMovies) > 0 {
+			break
+		}
+	}
 }
 
 func (*recommendService) buildResponse(ctx *RecommendContext) {
 	errCode := RetSuccess
-	if ctx.errCode != nil {
-		errCode = ctx.errCode
+	if ctx.ErrCode != nil {
+		errCode = ctx.ErrCode
 	}
-	ctx.resp.BaseResp.Code = errCode.Code
-	ctx.resp.BaseResp.Msg = errCode.Msg
+	ctx.Resp.BaseResp.Code = errCode.Code
+	ctx.Resp.BaseResp.Msg = errCode.Msg
+
+	for recType, recommendPairs := range ctx.RecommendMovies {
+		for _, recommendPair := range recommendPairs {
+			ctx.Resp.Entry = append(ctx.Resp.Entry, &recommend.RecommendEntry{
+				RsType:   recType,
+				MovieId:  recommendPair.MovieID,
+				SourceId: recommendPair.SourceID,
+			})
+		}
+	}
 }

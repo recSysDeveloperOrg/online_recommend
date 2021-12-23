@@ -21,25 +21,25 @@ func (r *RecommendSourceSimMat) RequestRecommend(ctx *RecommendContext) {
 		return
 	}
 
-	offset, size := ctx.req.Page*ctx.req.Offset, ctx.req.Offset
-	if recPairs, cached := tryCache(sourceItemCFUserID2RecommendPairCache, ctx.req.UserId, offset, size); cached {
-		ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_RATING] = recPairs
+	offset, size := ctx.Req.Page*ctx.Req.Offset, ctx.Req.Offset
+	if recPairs, cached := tryCache(sourceItemCFUserID2RecommendPairCache, ctx.Req.UserId, offset, size); cached {
+		ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_RATING] = recPairs
 		return
 	}
 
-	userLikes, err := model.NewUserRatingDao().FindRatingAbove(ctx.ctx,
-		ctx.req.UserId, MinRatingIfLike)
+	userLikes, err := model.NewUserRatingDao().FindRatingAbove(ctx.Ctx,
+		ctx.Req.UserId, MinRatingIfLike)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 	movieIDs := make([]string, len(userLikes))
 	for i, rating := range userLikes {
 		movieIDs[i] = rating.MovieID
 	}
-	movieWeights, err := model.NewMovieSimMatDao().FindByMovieIDs(ctx.ctx, movieIDs)
+	movieWeights, err := model.NewMovieSimMatDao().FindByMovieIDs(ctx.Ctx, movieIDs)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 	movieID2Rating := make(map[string]float64)
@@ -47,16 +47,16 @@ func (r *RecommendSourceSimMat) RequestRecommend(ctx *RecommendContext) {
 		movieID2Rating[rating.MovieID] = rating.Rating
 	}
 	// 找不感兴趣的电影，通过评分函数过滤掉 ; 过滤掉已经评分过的电影
-	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.ctx,
-		ctx.req.UserId, model.UninterestedTypeMovie)
+	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.Ctx,
+		ctx.Req.UserId, model.UninterestedTypeMovie)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
-	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.ctx,
-		ctx.req.UserId, 0.0)
+	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.Ctx,
+		ctx.Req.UserId, 0.0)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 	ratedMovies := userRatings2MovieIDSet(userRatings)
@@ -72,14 +72,14 @@ func (r *RecommendSourceSimMat) RequestRecommend(ctx *RecommendContext) {
 
 			return movieID2Rating[sourceMovieID] * weight
 		}, MaxRecommend)
-	sourceItemCFUserID2RecommendPairCache[ctx.req.UserId] = recommendPairs
-	ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_RATING] = recommendPairs[offset : offset+size]
+	sourceItemCFUserID2RecommendPairCache[ctx.Req.UserId] = recommendPairs
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_RATING] = recommendPairs[offset : offset+size]
 }
 
 func (*RecommendSourceSimMat) isUserInColdStartState(ctx *RecommendContext) bool {
-	ratingCnt, err := model.NewUserRatingMetaDao().FindRatingCntByUserID(ctx.ctx, ctx.req.UserId)
+	ratingCnt, err := model.NewUserRatingMetaDao().FindRatingCntByUserID(ctx.Ctx, ctx.Req.UserId)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return true
 	}
 

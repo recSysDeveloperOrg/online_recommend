@@ -12,30 +12,30 @@ type RecommendSourceLog struct {
 var sourceLogUserID2RecommendPairsCache = make(map[string][]*RecommendPair)
 
 func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
-	offset, size := ctx.req.Page*ctx.req.Offset, ctx.req.Offset
-	if recPairs, cached := tryCache(sourceLogUserID2RecommendPairsCache, ctx.req.UserId, offset, size); cached {
-		ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_LOG] = recPairs
+	offset, size := ctx.Req.Page*ctx.Req.Offset, ctx.Req.Offset
+	if recPairs, cached := tryCache(sourceLogUserID2RecommendPairsCache, ctx.Req.UserId, offset, size); cached {
+		ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_LOG] = recPairs
 		return
 	}
 
-	movieIDs := model.NewUserRecommendationMetaDao().GetViewLog(ctx.req.UserId)
-	movieWeights, err := model.NewMovieSimMatDao().FindByMovieIDs(ctx.ctx, movieIDs)
+	movieIDs := model.NewUserRecommendationMetaDao().GetViewLog(ctx.Req.UserId)
+	movieWeights, err := model.NewMovieSimMatDao().FindByMovieIDs(ctx.Ctx, movieIDs)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 
-	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.ctx,
-		ctx.req.UserId, 0.0)
+	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.Ctx,
+		ctx.Req.UserId, 0.0)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 	ratedMovies := userRatings2MovieIDSet(userRatings)
-	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.ctx,
-		ctx.req.UserId, model.UninterestedTypeMovie)
+	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.Ctx,
+		ctx.Req.UserId, model.UninterestedTypeMovie)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 
@@ -50,6 +50,6 @@ func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
 
 			return weight
 		}, MaxRecommend)
-	sourceLogUserID2RecommendPairsCache[ctx.req.UserId] = recommendPairs
-	ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_LOG] = recommendPairs[offset : offset+size]
+	sourceLogUserID2RecommendPairsCache[ctx.Req.UserId] = recommendPairs
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_LOG] = recommendPairs[offset : offset+size]
 }

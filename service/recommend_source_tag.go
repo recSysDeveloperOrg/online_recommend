@@ -17,25 +17,25 @@ const (
 var sourceTagUserID2RecommendPairCache = make(map[string][]*RecommendPair)
 
 func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
-	offset, size := ctx.req.Page*ctx.req.Offset, ctx.req.Offset
-	if recPair, hit := tryCache(sourceTagUserID2RecommendPairCache, ctx.req.UserId, offset, size); hit {
-		ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recPair
+	offset, size := ctx.Req.Page*ctx.Req.Offset, ctx.Req.Offset
+	if recPair, hit := tryCache(sourceTagUserID2RecommendPairCache, ctx.Req.UserId, offset, size); hit {
+		ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recPair
 		return
 	}
 
-	kMaxTags, err := model.NewTagUserDao().FindKMaxUserTags(ctx.ctx,
-		ctx.req.UserId, KMaxTag)
+	kMaxTags, err := model.NewTagUserDao().FindKMaxUserTags(ctx.Ctx,
+		ctx.Req.UserId, KMaxTag)
 	if err != nil {
-		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 
 	tagID2Movies := make(map[string][]*model.TagMovie)
 	for _, kMaxTag := range kMaxTags {
-		kMaxTag2Movies, err := model.NewTagMovieDao().FindKMaxByTagID(ctx.ctx,
+		kMaxTag2Movies, err := model.NewTagMovieDao().FindKMaxByTagID(ctx.Ctx,
 			kMaxTag.TagID, MaxRecommend)
 		if err != nil {
-			ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+			ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
 			return
 		}
 		tagID2Movies[kMaxTag.TagID] = kMaxTag2Movies
@@ -77,8 +77,8 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 	}
 
 	recommendPairs := interface2RecommendPairs(heap.PopValues())
-	sourceTagUserID2RecommendPairCache[ctx.req.UserId] = recommendPairs
-	ctx.recommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recommendPairs[offset : offset+size]
+	sourceTagUserID2RecommendPairCache[ctx.Req.UserId] = recommendPairs
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recommendPairs[offset : offset+size]
 }
 
 func getTagWeight(userTagTimes int, movieTagTimes int64) float64Comparator {
