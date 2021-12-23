@@ -18,14 +18,27 @@ func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
 		return
 	}
 
-	movieIDs := ctx.viewLogs
+	movieIDs := model.NewUserRecommendationMetaDao().GetViewLog(ctx.req.UserId)
 	movieWeights, err := model.NewMovieSimMatDao().FindByMovieIDs(ctx.ctx, movieIDs)
 	if err != nil {
 		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
 		return
 	}
 
-	uninterestedMovies, ratedMovies := ctx.uninterestedMovieIds, ctx.ratedMovies
+	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.ctx,
+		ctx.req.UserId, 0.0)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	ratedMovies := userRatings2MovieIDSet(userRatings)
+	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.ctx,
+		ctx.req.UserId, model.UninterestedTypeMovie)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+
 	recommendPairs := movieWeights2RecommendPairs(movieWeights,
 		func(sourceID, targetID string, weight float64) float64 {
 			if _, ok := uninterestedMovies[targetID]; ok {

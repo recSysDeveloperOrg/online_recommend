@@ -2,7 +2,9 @@ package service
 
 import (
 	"recommend/cache"
+	. "recommend/constant"
 	. "recommend/idl/gen/recommend"
+	"recommend/model"
 )
 
 type RecommendSourceTag struct {
@@ -21,10 +23,28 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 		return
 	}
 
+	kMaxTags, err := model.NewTagUserDao().FindKMaxUserTags(ctx.ctx,
+		ctx.req.UserId, KMaxTag)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+
+	tagID2Movies := make(map[string][]*model.TagMovie)
+	for _, kMaxTag := range kMaxTags {
+		kMaxTag2Movies, err := model.NewTagMovieDao().FindKMaxByTagID(ctx.ctx,
+			kMaxTag.TagID, MaxRecommend)
+		if err != nil {
+			ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+			return
+		}
+		tagID2Movies[kMaxTag.TagID] = kMaxTag2Movies
+	}
+
 	var heap *cache.Heap
 	addedMovies := make(map[string]struct{})
-	for _, kMaxTag := range ctx.kMaxTags {
-		kMaxTagMovies := ctx.kMaxTagID2Movies[kMaxTag.TagID]
+	for _, kMaxTag := range kMaxTags {
+		kMaxTagMovies := tagID2Movies[kMaxTag.TagID]
 		if heap == nil {
 			initNodes := make([]*cache.HeapNode, len(kMaxTagMovies))
 			for i, kMaxTagMovie := range kMaxTagMovies {

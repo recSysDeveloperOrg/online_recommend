@@ -5,23 +5,15 @@ import (
 	"fmt"
 	. "recommend/constant"
 	"recommend/idl/gen/recommend"
-	"recommend/model"
 	"strings"
 	"sync"
 )
 
 type RecommendContext struct {
-	ctx                  context.Context
-	req                  *recommend.RecommendReq
-	resp                 *recommend.RecommendResp
-	errCode              *ErrorCode
-	totalRatingCnt       int64
-	uninterestedMovieIds map[string]struct{}
-	uninterestedTagIds   map[string]struct{}
-	ratedMovies          map[string]struct{}
-	kMaxTags             []*model.TagUser
-	kMaxTagID2Movies     map[string][]*model.TagMovie
-	viewLogs             []string
+	ctx     context.Context
+	req     *recommend.RecommendReq
+	resp    *recommend.RecommendResp
+	errCode *ErrorCode
 
 	recommendMovies map[recommend.RecommendSourceType][]*RecommendPair
 }
