@@ -37,6 +37,7 @@ enum FilterType {
 message FilterRuleReq {
     FilterType f_type = 1;
     string source_id = 2;
+    string user_id = 3;
 }
 message FilterRuleResp {
     BaseResp base_resp = 1;

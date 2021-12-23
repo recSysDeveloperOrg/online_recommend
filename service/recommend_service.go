@@ -42,7 +42,7 @@ func NewRecommendContext(ctx context.Context, req *recommend.RecommendReq) *Reco
 	}
 }
 
-func (s *recommendService) DoService(ctx *RecommendContext) {
+func (s *recommendService) RecommendMovies(ctx *RecommendContext) {
 	defer s.buildResponse(ctx)
 	if s.checkParams(ctx); ctx.ErrCode != nil {
 		return
@@ -57,6 +57,9 @@ func (*recommendService) checkParams(ctx *RecommendContext) {
 	}
 	if ctx.Req.Offset < 0 {
 		ctx.ErrCode = BuildErrCode(fmt.Sprintf("Offset:%d", ctx.Req.Page), RetParamsErr)
+	}
+	if ctx.Req.Page*ctx.Req.Offset+ctx.Req.Offset > MaxRecommend {
+		ctx.ErrCode = BuildErrCode(fmt.Sprintf("max recommend is %d", MaxRecommend), RetParamsErr)
 	}
 }
 

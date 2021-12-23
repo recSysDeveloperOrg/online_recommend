@@ -15,7 +15,7 @@ func (*RecommendServer) Recommend(ctx context.Context, req *recommend.RecommendR
 	*recommend.RecommendResp, error) {
 	log.Printf("%+v", req)
 	rCtx := service.NewRecommendContext(ctx, req)
-	service.NewRecommendService().DoService(rCtx)
+	service.NewRecommendService().RecommendMovies(rCtx)
 
 	log.Printf("%+v", rCtx.Resp)
 	return rCtx.Resp, nil
@@ -23,5 +23,10 @@ func (*RecommendServer) Recommend(ctx context.Context, req *recommend.RecommendR
 
 func (*RecommendServer) AddFilterRule(ctx context.Context, req *recommend.FilterRuleReq) (
 	*recommend.FilterRuleResp, error) {
-	return nil, nil
+	log.Printf("%+v", req)
+	rCtx := service.NewRecommendMetaContext(ctx, req)
+	service.NewRecommendMetaService().AddFilterRule(rCtx)
+
+	log.Printf("%+v", rCtx.Resp)
+	return rCtx.Resp, nil
 }
