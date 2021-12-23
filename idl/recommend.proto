@@ -42,14 +42,7 @@ message FilterRuleResp {
     BaseResp base_resp = 1;
 }
 
-message InvalidateSimMatCacheReq {
-
-}
-message InvalidateSimMatCacheResp {
-    BaseResp base_resp = 1;
-}
 service Recommender {
     rpc Recommend(RecommendReq) returns (RecommendResp) {}
     rpc AddFilterRule(FilterRuleReq) returns (FilterRuleResp) {}
-    rpc InvalidateSimMatCache(InvalidateSimMatCacheReq) returns (InvalidateSimMatCacheResp) {}
 }

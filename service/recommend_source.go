@@ -24,8 +24,8 @@ const (
 
 var RecommendSources []RecommendSource
 
-func AppendRecommendSource(source RecommendSource) {
-	RecommendSources = append(RecommendSources, source)
+func AppendRecommendSource(source ...RecommendSource) {
+	RecommendSources = append(RecommendSources, source...)
 }
 
 func (f float64Comparator) Compare(comparator interface{}) int {

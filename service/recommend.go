@@ -5,7 +5,6 @@ import (
 	"fmt"
 	. "recommend/constant"
 	"recommend/idl/gen/recommend"
-	"strings"
 	"sync"
 )
 
@@ -41,10 +40,6 @@ func (s *recommendService) DoService(ctx *RecommendContext) {
 }
 
 func (*recommendService) checkParams(ctx *RecommendContext) {
-	if len(strings.TrimSpace(ctx.Req.UserId)) == 0 {
-		ctx.ErrCode = BuildErrCode("没有用户ID信息", RetParamsErr)
-		return
-	}
 	if ctx.Req.Page < 0 {
 		ctx.ErrCode = BuildErrCode(fmt.Sprintf("Page:%d", ctx.Req.Page), RetParamsErr)
 		return

@@ -14,11 +14,12 @@ import (
 type UserRecommendationMetaDao struct {
 	m *cache.LimitMap
 }
+
 type UserRecommendationMeta struct {
-	UserID             string
-	UninterestedMovies map[string]struct{}
-	UninterestedTags   map[string]struct{}
-	ViewLogs           []string
+	UserID             string   `bson:"user_id"`
+	UninterestedMovies []string `bson:"uninterested_movie_ids"`
+	UninterestedTags   []string `bson:"uninterested_tag_ids"`
+	ViewLogs           []string `bson:"view_logs"`
 }
 
 var userRecommendationMetaDao *UserRecommendationMetaDao
@@ -54,23 +55,23 @@ func (*UserRecommendationMetaDao) FindUninterestedSet(ctx context.Context, userI
 		return nil, err
 	}
 
-	var movies []string
-	c, err := GetClient().Collection(CollectionUserRecommendationMeta).
-		Find(ctx, bson.D{{"user_id", userObjectId}}, options.Find().SetProjection(
-			bson.D{{fmt.Sprintf("uninterested_%s_ids", typeName), 1}}))
-	if err != nil {
-		return nil, err
-	}
-	if err := c.All(ctx, &movies); err != nil {
+	var meta UserRecommendationMeta
+	if err := GetClient().Collection(CollectionUserRecommendationMeta).
+		FindOne(ctx, bson.D{{"user_id", userObjectId}}, options.FindOne().SetProjection(
+			bson.D{{fmt.Sprintf("uninterested_%s_ids", typeName), 1}})).Decode(&meta); err != nil {
 		return nil, err
 	}
 
-	movieIDSet := make(map[string]struct{})
-	for _, movieID := range movies {
-		movieIDSet[movieID] = struct{}{}
+	idList := meta.UninterestedMovies
+	if typeName == UninterestedTypeTag {
+		idList = meta.UninterestedTags
+	}
+	idSet := make(map[string]struct{})
+	for _, id := range idList {
+		idSet[id] = struct{}{}
 	}
 
-	return movieIDSet, nil
+	return idSet, nil
 }
 
 func (*UserRecommendationMetaDao) AddUninterestedSet(ctx context.Context, userID, itemID string,
@@ -93,11 +94,11 @@ func (*UserRecommendationMetaDao) AddUninterestedSet(ctx context.Context, userID
 		}},
 	}
 	updateRes, err := GetClient().Collection(CollectionUserRecommendationMeta).
-		UpdateOne(ctx, whereMap, updatesMap)
+		UpdateOne(ctx, whereMap, updatesMap, options.Update().SetUpsert(true))
 	if err != nil {
 		return err
 	}
-	if updateRes.UpsertedCount == 0 {
+	if updateRes.UpsertedCount == 0 && updateRes.ModifiedCount == 0 {
 		return ErrNoElementUpdate
 	}
 

@@ -17,14 +17,14 @@ type MongoDB struct {
 }
 
 var cfg Config
-var cfgFileName = "config/prod_conf.json"
+var DefaultCfg = "config/prod_conf.json"
 
 func GetConfig() *Config {
 	return &cfg
 }
 
-func InitConfig() error {
-	content, err := ioutil.ReadFile(cfgFileName)
+func InitConfig(cfgFile string) error {
+	content, err := ioutil.ReadFile(cfgFile)
 	if err != nil {
 		return err
 	}

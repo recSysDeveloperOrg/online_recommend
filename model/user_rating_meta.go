@@ -4,10 +4,16 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 )
 
 type UserRatingMetaDao struct {
+}
+
+type UserRatingMeta struct {
+	UserID      string `bson:"user_id"`
+	TotalRating int64  `bson:"total_rating"`
 }
 
 var userRatingMetaDao *UserRatingMetaDao
@@ -26,11 +32,12 @@ func (*UserRatingMetaDao) FindRatingCntByUserID(ctx context.Context, userID stri
 	if err != nil {
 		return 0, err
 	}
-	var res int64
+	var res *UserRatingMeta
 	if err := GetClient().Collection(CollectionUserRatingMeta).
-		FindOne(ctx, bson.D{{"user_id", userObjectID}}).Decode(&res); err != nil {
+		FindOne(ctx, bson.D{{"user_id", userObjectID}},
+			options.FindOne()).Decode(&res); err != nil {
 		return 0, err
 	}
 
-	return res, nil
+	return res.TotalRating, nil
 }

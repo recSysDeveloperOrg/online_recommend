@@ -4,7 +4,6 @@ import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"sync"
 )
 
@@ -12,12 +11,12 @@ type MovieSimMatDao struct {
 }
 
 type MovieWeight struct {
-	To     string
-	Weight float64
+	To     string  `bson:"from"`
+	Weight float64 `bson:"weight"`
 }
 type MovieWeights struct {
-	From string
-	To   []*MovieWeight
+	From string         `bson:"from"`
+	To   []*MovieWeight `bson:"to"`
 }
 
 var movieSimMatDao *MovieSimMatDao
@@ -43,9 +42,8 @@ func (*MovieSimMatDao) FindByMovieIDs(ctx context.Context, movieIDs []string) ([
 
 	var result []*MovieWeights
 	condMap := bson.D{{"from", bson.D{{"$in", movieObjectIDs}}}}
-	projMap := bson.D{{"to", 1}}
 	c, err := GetClient().Collection(CollectionMovieSimMat).
-		Find(ctx, condMap, options.Find().SetProjection(projMap))
+		Find(ctx, condMap)
 	if err != nil {
 		return nil, err
 	}

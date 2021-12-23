@@ -20,7 +20,6 @@ const _ = grpc.SupportPackageIsVersion7
 type RecommenderClient interface {
 	Recommend(ctx context.Context, in *RecommendReq, opts ...grpc.CallOption) (*RecommendResp, error)
 	AddFilterRule(ctx context.Context, in *FilterRuleReq, opts ...grpc.CallOption) (*FilterRuleResp, error)
-	InvalidateSimMatCache(ctx context.Context, in *InvalidateSimMatCacheReq, opts ...grpc.CallOption) (*InvalidateSimMatCacheResp, error)
 }
 
 type recommenderClient struct {
@@ -49,22 +48,12 @@ func (c *recommenderClient) AddFilterRule(ctx context.Context, in *FilterRuleReq
 	return out, nil
 }
 
-func (c *recommenderClient) InvalidateSimMatCache(ctx context.Context, in *InvalidateSimMatCacheReq, opts ...grpc.CallOption) (*InvalidateSimMatCacheResp, error) {
-	out := new(InvalidateSimMatCacheResp)
-	err := c.cc.Invoke(ctx, "/recommend.Recommender/InvalidateSimMatCache", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // RecommenderServer is the server API for Recommender service.
 // All implementations must embed UnimplementedRecommenderServer
 // for forward compatibility
 type RecommenderServer interface {
 	Recommend(context.Context, *RecommendReq) (*RecommendResp, error)
 	AddFilterRule(context.Context, *FilterRuleReq) (*FilterRuleResp, error)
-	InvalidateSimMatCache(context.Context, *InvalidateSimMatCacheReq) (*InvalidateSimMatCacheResp, error)
 	mustEmbedUnimplementedRecommenderServer()
 }
 
@@ -77,9 +66,6 @@ func (UnimplementedRecommenderServer) Recommend(context.Context, *RecommendReq) 
 }
 func (UnimplementedRecommenderServer) AddFilterRule(context.Context, *FilterRuleReq) (*FilterRuleResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFilterRule not implemented")
-}
-func (UnimplementedRecommenderServer) InvalidateSimMatCache(context.Context, *InvalidateSimMatCacheReq) (*InvalidateSimMatCacheResp, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InvalidateSimMatCache not implemented")
 }
 func (UnimplementedRecommenderServer) mustEmbedUnimplementedRecommenderServer() {}
 
@@ -130,24 +116,6 @@ func _Recommender_AddFilterRule_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Recommender_InvalidateSimMatCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InvalidateSimMatCacheReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RecommenderServer).InvalidateSimMatCache(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/recommend.Recommender/InvalidateSimMatCache",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RecommenderServer).InvalidateSimMatCache(ctx, req.(*InvalidateSimMatCacheReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Recommender_ServiceDesc is the grpc.ServiceDesc for Recommender service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -162,10 +130,6 @@ var Recommender_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddFilterRule",
 			Handler:    _Recommender_AddFilterRule_Handler,
-		},
-		{
-			MethodName: "InvalidateSimMatCache",
-			Handler:    _Recommender_InvalidateSimMatCache_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

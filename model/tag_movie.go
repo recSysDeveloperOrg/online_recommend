@@ -12,10 +12,10 @@ type TagMovieDao struct {
 }
 
 type TagMovie struct {
-	MovieID     string
-	TagID       string
-	UpdatedAt   int64
-	TaggedTimes int64
+	MovieID     string `bson:"movie_id"`
+	TagID       string `bson:"tag_id"`
+	UpdatedAt   int64  `bson:"updated_at"`
+	TaggedTimes int64  `bson:"tagged_times"`
 }
 
 var tagMovieDao *TagMovieDao

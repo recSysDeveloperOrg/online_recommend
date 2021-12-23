@@ -10,6 +10,10 @@ import (
 type MovieModelDao struct {
 }
 
+type MovieModel struct {
+	MovieID string `bson:"_id"`
+}
+
 var movieModelDao *MovieModelDao
 var movieModelDaoOnce sync.Once
 
@@ -22,7 +26,7 @@ func NewMovieDao() *MovieModelDao {
 }
 
 func (*MovieModelDao) FindTopKMovies(ctx context.Context, topK int64) ([]string, error) {
-	var res []string
+	var res []*MovieModel
 	c, err := GetClient().Collection(CollectionMovie).
 		Find(ctx, bson.D{}, options.Find().SetSort(bson.D{{"average_rating", -1}}).
 			SetLimit(topK).SetProjection(bson.D{{"_id", 1}}))
@@ -33,5 +37,10 @@ func (*MovieModelDao) FindTopKMovies(ctx context.Context, topK int64) ([]string,
 		return nil, err
 	}
 
-	return res, nil
+	movieIDs := make([]string, len(res))
+	for i, movie := range res {
+		movieIDs[i] = movie.MovieID
+	}
+
+	return movieIDs, nil
 }

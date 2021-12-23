@@ -37,12 +37,12 @@ func (*TagUserDao) FindKMaxUserTags(ctx context.Context, userID string, kMax int
 
 	var tagUsers []*TagUser
 	match := bson.D{
-		{"user_id", userObjectID},
+		{"$match", bson.D{{"user_id", userObjectID}}},
 	}
 	calculateSize := bson.D{
-		{"$addFields", bson.D{{"use_times", bson.D{{"$size", "movie_ids"}}}}}}
+		{"$addFields", bson.D{{"use_times", bson.D{{"$size", "$movie_ids"}}}}}}
 	sortBySizeDesc := bson.D{
-		{"$sort", "use_times"},
+		{"$sort", bson.D{{"use_times", -1}}},
 	}
 	limit := bson.D{
 		{"$limit", kMax},
