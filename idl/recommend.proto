@@ -43,7 +43,16 @@ message FilterRuleResp {
     BaseResp base_resp = 1;
 }
 
+message ViewLogReq {
+    string user_id = 1;
+    string movie_id = 2;
+}
+message ViewLogResp {
+    BaseResp base_resp = 1;
+}
+
 service Recommender {
     rpc Recommend(RecommendReq) returns (RecommendResp) {}
     rpc AddFilterRule(FilterRuleReq) returns (FilterRuleResp) {}
+    rpc AddViewLog(ViewLogReq) returns (ViewLogResp) {}
 }

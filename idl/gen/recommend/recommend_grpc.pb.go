@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type RecommenderClient interface {
 	Recommend(ctx context.Context, in *RecommendReq, opts ...grpc.CallOption) (*RecommendResp, error)
 	AddFilterRule(ctx context.Context, in *FilterRuleReq, opts ...grpc.CallOption) (*FilterRuleResp, error)
+	AddViewLog(ctx context.Context, in *ViewLogReq, opts ...grpc.CallOption) (*ViewLogResp, error)
 }
 
 type recommenderClient struct {
@@ -48,12 +49,22 @@ func (c *recommenderClient) AddFilterRule(ctx context.Context, in *FilterRuleReq
 	return out, nil
 }
 
+func (c *recommenderClient) AddViewLog(ctx context.Context, in *ViewLogReq, opts ...grpc.CallOption) (*ViewLogResp, error) {
+	out := new(ViewLogResp)
+	err := c.cc.Invoke(ctx, "/recommend.Recommender/AddViewLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RecommenderServer is the server API for Recommender service.
 // All implementations must embed UnimplementedRecommenderServer
 // for forward compatibility
 type RecommenderServer interface {
 	Recommend(context.Context, *RecommendReq) (*RecommendResp, error)
 	AddFilterRule(context.Context, *FilterRuleReq) (*FilterRuleResp, error)
+	AddViewLog(context.Context, *ViewLogReq) (*ViewLogResp, error)
 	mustEmbedUnimplementedRecommenderServer()
 }
 
@@ -66,6 +77,9 @@ func (UnimplementedRecommenderServer) Recommend(context.Context, *RecommendReq) 
 }
 func (UnimplementedRecommenderServer) AddFilterRule(context.Context, *FilterRuleReq) (*FilterRuleResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddFilterRule not implemented")
+}
+func (UnimplementedRecommenderServer) AddViewLog(context.Context, *ViewLogReq) (*ViewLogResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddViewLog not implemented")
 }
 func (UnimplementedRecommenderServer) mustEmbedUnimplementedRecommenderServer() {}
 
@@ -116,6 +130,24 @@ func _Recommender_AddFilterRule_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Recommender_AddViewLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ViewLogReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RecommenderServer).AddViewLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/recommend.Recommender/AddViewLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RecommenderServer).AddViewLog(ctx, req.(*ViewLogReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Recommender_ServiceDesc is the grpc.ServiceDesc for Recommender service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +162,10 @@ var Recommender_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddFilterRule",
 			Handler:    _Recommender_AddFilterRule_Handler,
+		},
+		{
+			MethodName: "AddViewLog",
+			Handler:    _Recommender_AddViewLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

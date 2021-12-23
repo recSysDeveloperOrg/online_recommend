@@ -30,3 +30,13 @@ func (*RecommendServer) AddFilterRule(ctx context.Context, req *recommend.Filter
 	log.Printf("%+v", rCtx.Resp)
 	return rCtx.Resp, nil
 }
+
+func (*RecommendServer) AddViewLog(ctx context.Context, req *recommend.ViewLogReq) (
+	*recommend.ViewLogResp, error) {
+	log.Printf("%+v", req)
+	rCtx := service.NewViewLogContext(ctx, req)
+	service.NewViewLogService().AddViewLog(rCtx)
+
+	log.Printf("%+v", rCtx.Resp)
+	return rCtx.Resp, nil
+}
