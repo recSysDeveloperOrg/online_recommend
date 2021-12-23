@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"recommend/cache"
 	"sync"
 )
@@ -23,7 +24,7 @@ type UserRecommendationMeta struct {
 var userRecommendationMetaDao *UserRecommendationMetaDao
 var userRecommendationMetaDaoOnce sync.Once
 
-func NewUserRecommendationDao() *UserRecommendationMetaDao {
+func NewUserRecommendationMetaDao() *UserRecommendationMetaDao {
 	userRecommendationMetaDaoOnce.Do(func() {
 		userRecommendationMetaDao = &UserRecommendationMetaDao{
 			m: cache.NewLimitMap(100),
@@ -46,20 +47,30 @@ const (
 	UninterestedFieldName = "uninterested_%s_ids"
 )
 
-func (*UserRecommendationMetaDao) FindRecommendationMetaByUserID(ctx context.Context, userID string) (
-	*UserRecommendationMeta, error) {
-	userObjectID, err := primitive.ObjectIDFromHex(userID)
+func (*UserRecommendationMetaDao) FindUninterestedSet(ctx context.Context, userID, typeName string) (
+	map[string]struct{}, error) {
+	userObjectId, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	var meta *UserRecommendationMeta
-	if err := GetClient().Collection(CollectionUserRecommendationMeta).
-		FindOne(ctx, bson.D{{"user_id", userObjectID}}).Decode(&meta); err != nil {
+	var movies []string
+	c, err := GetClient().Collection(CollectionUserRecommendationMeta).
+		Find(ctx, bson.D{{"user_id", userObjectId}}, options.Find().SetProjection(
+			bson.D{{fmt.Sprintf("uninterested_%s_ids", typeName), 1}}))
+	if err != nil {
+		return nil, err
+	}
+	if err := c.All(ctx, &movies); err != nil {
 		return nil, err
 	}
 
-	return meta, nil
+	movieIDSet := make(map[string]struct{})
+	for _, movieID := range movies {
+		movieIDSet[movieID] = struct{}{}
+	}
+
+	return movieIDSet, nil
 }
 
 func (*UserRecommendationMetaDao) AddUninterestedSet(ctx context.Context, userID, itemID string,

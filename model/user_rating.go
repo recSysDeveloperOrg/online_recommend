@@ -33,7 +33,7 @@ func (*UserRatingDao) FindRatingAbove(ctx context.Context, userID string, minRat
 		return nil, err
 	}
 	c, err := GetClient().Collection(CollectionRating).
-		Find(ctx, bson.D{{"user_id", userObjectID}})
+		Find(ctx, bson.D{{"user_id", userObjectID}, {"rating", bson.D{{"$ge", minRating}}}})
 	if err != nil {
 		return nil, err
 	}

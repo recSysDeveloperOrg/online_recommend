@@ -24,7 +24,31 @@ func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
 		return
 	}
 
-	recommendPairs := movieWeights2RecommendPairs(movieWeights, DefaultRatingFunc, MaxRecommend)
+	// 过滤不感兴趣的电影
+	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.ctx,
+		ctx.req.UserId, model.UninterestedTypeMovie)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	// 过滤掉已经评分过的电影
+	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.ctx, ctx.req.UserId, 0.0)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	ratedMovies := userRatings2MovieIDSet(userRatings)
+	recommendPairs := movieWeights2RecommendPairs(movieWeights,
+		func(sourceID, targetID string, weight float64) float64 {
+			if _, ok := uninterestedMovies[targetID]; ok {
+				return 0
+			}
+			if _, ok := ratedMovies[targetID]; ok {
+				return 0
+			}
+
+			return weight
+		}, MaxRecommend)
 	sourceLogUserID2RecommendPairsCache[ctx.req.UserId] = recommendPairs
 	ctx.recommendMovies[RecommendSourceTypeLog] = recommendPairs[offset : offset+size]
 }

@@ -46,9 +46,31 @@ func (r *RecommendSourceSimMat) RequestRecommend(ctx *RecommendContext) {
 	for _, rating := range ratings {
 		movieID2Rating[rating.MovieID] = rating.Rating
 	}
-	recommendPairs := movieWeights2RecommendPairs(movieWeights, func(sourceMovieID string, weight float64) float64Comparator {
-		return float64Comparator(movieID2Rating[sourceMovieID] * weight)
-	}, MaxRecommend)
+	// 找不感兴趣的电影，通过评分函数过滤掉
+	uninterestedMovies, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.ctx,
+		ctx.req.UserId, model.UninterestedTypeMovie)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	// 过滤掉已经评分过的电影
+	userRatings, err := model.NewUserRatingDao().FindRatingAbove(ctx.ctx, ctx.req.UserId, 0.0)
+	if err != nil {
+		ctx.errCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	ratedMovies := userRatings2MovieIDSet(userRatings)
+	recommendPairs := movieWeights2RecommendPairs(movieWeights,
+		func(sourceMovieID, targetMovieID string, weight float64) float64 {
+			if _, ok := uninterestedMovies[targetMovieID]; ok {
+				return 0
+			}
+			if _, ok := ratedMovies[targetMovieID]; ok {
+				return 0
+			}
+
+			return movieID2Rating[sourceMovieID] * weight
+		}, MaxRecommend)
 	sourceItemCFUserID2RecommendPairCache[ctx.req.UserId] = recommendPairs
 	ctx.recommendMovies[RecommendSourceTypeItemCF] = recommendPairs[offset : offset+size]
 }
