@@ -64,6 +64,12 @@ func (*recommendService) checkParams(ctx *RecommendContext) {
 }
 
 func (*recommendService) doRecommend(ctx *RecommendContext) {
+	// 未登录用户直接推荐TopK
+	if ctx.Req.UserId == "" {
+		recommendSourceTopK.RequestRecommend(ctx)
+		return
+	}
+
 	for _, recommendSource := range RecommendSources {
 		recommendSource.RequestRecommend(ctx)
 		if len(ctx.RecommendMovies) > 0 {

@@ -31,6 +31,7 @@ func (*RecommendSourceTopK) RequestRecommend(ctx *RecommendContext) {
 	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TOP_K] = topKMovieCache[offset : offset+size]
 }
 
+// TODO 定时任务刷新
 func (*RecommendSourceTopK) RefreshMovieCache() {
 	topKMovieCacheSync.Lock()
 	defer topKMovieCacheSync.Unlock()

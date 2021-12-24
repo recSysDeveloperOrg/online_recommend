@@ -31,6 +31,10 @@ func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
 	}
 
 	movieIDs := model.NewUserRecommendationMetaDao().GetViewLog(ctx.Req.UserId)
+	if len(movieIDs) == 0 {
+		return
+	}
+
 	movieWeights, err := model.NewMovieSimMatDao().FindByMovieIDs(ctx.Ctx, movieIDs)
 	if err != nil {
 		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)

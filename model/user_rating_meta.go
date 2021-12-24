@@ -2,9 +2,12 @@ package model
 
 import (
 	"context"
+	"errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"sync"
 )
 
@@ -36,7 +39,10 @@ func (*UserRatingMetaDao) FindRatingCntByUserID(ctx context.Context, userID stri
 	if err := GetClient().Collection(CollectionUserRatingMeta).
 		FindOne(ctx, bson.D{{"user_id", userObjectID}},
 			options.FindOne()).Decode(&res); err != nil {
-		return 0, err
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			log.Printf("No rating for %s", userID)
+			return 0, nil
+		}
 	}
 
 	return res.TotalRating, nil
