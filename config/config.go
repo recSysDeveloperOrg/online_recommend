@@ -2,11 +2,15 @@ package config
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"io/ioutil"
+	"log"
 )
 
 type Config struct {
-	Mongo *MongoDB `json:"mongodb"`
+	Mongo *MongoDB       `json:"mongodb"`
+	Es    *ElasticSearch `json:"elastic_search"`
 }
 
 type MongoDB struct {
@@ -16,15 +20,28 @@ type MongoDB struct {
 	Password string `json:"password"`
 }
 
+type ElasticSearch struct {
+	Url   string `json:"url"`
+	Index string `json:"index"`
+}
+
 var cfg Config
-var DefaultCfg = "config/prod_conf.json"
+
+const (
+	CfgFileMain   = "config/prod_%s_conf.json"
+	CfgFileNested = "../config/prod_%s_conf.json"
+)
 
 func GetConfig() *Config {
 	return &cfg
 }
 
 func InitConfig(cfgFile string) error {
-	content, err := ioutil.ReadFile(cfgFile)
+	var env string
+	flag.StringVar(&env, "env", "local", "specify env")
+	flag.Parse()
+	log.Printf("env:%s", env)
+	content, err := ioutil.ReadFile(fmt.Sprintf(cfgFile, env))
 	if err != nil {
 		return err
 	}

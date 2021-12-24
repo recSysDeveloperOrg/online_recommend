@@ -6,7 +6,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if err := config.InitConfig("../config/prod_conf.json"); err != nil {
+	if err := config.InitConfig(config.CfgFileNested); err != nil {
 		panic(err)
 	}
 	if err := InitModel(); err != nil {

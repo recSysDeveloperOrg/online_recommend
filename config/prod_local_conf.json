@@ -1,0 +1,12 @@
+{
+  "mongodb": {
+    "url": "mongodb://172.17.168.4:27017",
+    "user": "admin",
+    "password": "holy-shit-wtf.com",
+    "DBName": "movie"
+  },
+  "elastic_search": {
+    "url": "http://172.17.168.4:9200",
+    "index": "movie"
+  }
+}
