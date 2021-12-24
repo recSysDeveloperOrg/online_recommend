@@ -45,6 +45,9 @@ func (s *ViewLogService) AddViewLog(ctx *ViewLogContext) {
 	if s.checkParam(ctx); ctx.ErrCode != nil {
 		return
 	}
+	if s.addViewLog(ctx); ctx.ErrCode != nil {
+		return
+	}
 }
 
 func (*ViewLogService) checkParam(ctx *ViewLogContext) {
@@ -58,8 +61,8 @@ func (*ViewLogService) checkParam(ctx *ViewLogContext) {
 	}
 }
 
-func (*ViewLogService) addViewLog(ctx *ViewLogContext, userID, movieID string) {
-	if err := model.NewUserRecommendationMetaDao().AddViewLog(userID, movieID); err != nil {
+func (*ViewLogService) addViewLog(ctx *ViewLogContext) {
+	if err := model.NewUserRecommendationMetaDao().AddViewLog(ctx.Req.UserId, ctx.Req.MovieId); err != nil {
 		ctx.ErrCode = BuildErrCode(err, RetWriteRepoErr)
 	}
 }

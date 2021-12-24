@@ -111,6 +111,10 @@ func (*UserRecommendationMetaDao) AddUninterestedSet(ctx context.Context, userID
 }
 
 func (d *UserRecommendationMetaDao) AddViewLog(userID string, movieID string) error {
+	if d.m.CheckItemExists(userID, movieID) {
+		return nil
+	}
+
 	d.m.Add(userID, movieID)
 	return nil
 }
