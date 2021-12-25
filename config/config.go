@@ -38,7 +38,7 @@ func GetConfig() *Config {
 
 func InitConfig(cfgFile string) error {
 	var env string
-	flag.StringVar(&env, "env", "local", "specify env")
+	flag.StringVar(&env, "env", "remote", "specify env")
 	flag.Parse()
 	log.Printf("env:%s", env)
 	content, err := ioutil.ReadFile(fmt.Sprintf(cfgFile, env))
