@@ -57,6 +57,7 @@ func movieWeights2RecommendPairs(movieWeights []*model.MovieWeights, ratingFunc 
 		if _, ok := addedMovies[weight.To]; ok {
 			continue
 		}
+		addedMovies[weight.To] = struct{}{}
 
 		recommendPairs[nAdd] = &RecommendPair{
 			MovieID:  weight.To,
