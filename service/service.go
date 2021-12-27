@@ -6,5 +6,5 @@ func InitService() {
 	rsTag := NewRecommendSourceTag()
 	rsTopK := NewRecommendSourceTopK()
 	rsTopK.RefreshMovieCache()
-	AppendRecommendSource(rsItemCF, rsLog, rsTag, rsTopK)
+	AppendRecommendSource(rsItemCF, rsTag, rsLog, rsTopK)
 }
