@@ -88,6 +88,10 @@ func (*recommendService) buildResponse(ctx *RecommendContext) {
 
 	for recType, recommendPairs := range ctx.RecommendMovies {
 		for _, recommendPair := range recommendPairs {
+			// 由于创建的是固定大小（500）的推荐Pair数组，所以会出现后面部分为nil的情况
+			if recommendPair == nil {
+				break
+			}
 			ctx.Resp.Entry = append(ctx.Resp.Entry, &recommend.RecommendEntry{
 				RsType:   recType,
 				MovieId:  recommendPair.MovieID,

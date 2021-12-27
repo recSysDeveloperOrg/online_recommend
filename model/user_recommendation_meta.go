@@ -9,12 +9,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	"recommend/cache"
 	"sync"
 )
 
 type UserRecommendationMetaDao struct {
-	m *cache.LimitMap
+	m map[string][]string
 }
 
 type UserRecommendationMeta struct {
@@ -30,7 +29,7 @@ var userRecommendationMetaDaoOnce sync.Once
 func NewUserRecommendationMetaDao() *UserRecommendationMetaDao {
 	userRecommendationMetaDaoOnce.Do(func() {
 		userRecommendationMetaDao = &UserRecommendationMetaDao{
-			m: cache.NewLimitMap(100),
+			m: make(map[string][]string),
 		}
 	})
 
@@ -111,14 +110,20 @@ func (*UserRecommendationMetaDao) AddUninterestedSet(ctx context.Context, userID
 }
 
 func (d *UserRecommendationMetaDao) AddViewLog(userID string, movieID string) error {
-	if d.m.CheckItemExists(userID, movieID) {
-		return nil
+	logs := d.m[userID]
+	for _, logID := range logs {
+		if logID == movieID {
+			return nil
+		}
 	}
 
-	d.m.Add(userID, movieID)
+	if _, ok := d.m[userID]; !ok {
+		d.m[userID] = make([]string, 0)
+	}
+	d.m[userID] = append(d.m[userID], movieID)
 	return nil
 }
 
 func (d *UserRecommendationMetaDao) GetViewLog(userID string) []string {
-	return d.m.GetItemsAsString(userID)
+	return d.m[userID]
 }

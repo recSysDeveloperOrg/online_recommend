@@ -97,15 +97,15 @@ func maxMovieWeight(movieWeights []*model.MovieWeights, pointers []int, ratingFu
 	return maxMovieWeight, maxSourceID, updated
 }
 
-// TODO sync this map
+// TODO sync this map 先别搞缓存，后面再说吧
 func tryCache(cache map[string][]*RecommendPair, userID string, offset, size int64) ([]*RecommendPair, bool) {
-	if cachedPairs, ok := cache[userID]; ok {
-		if offset+size <= int64(len(cachedPairs)) {
-			return cachedPairs[offset : offset+size], true
-		}
-
-		return nil, true
-	}
+	//if cachedPairs, ok := cache[userID]; ok {
+	//	if offset+size <= int64(len(cachedPairs)) {
+	//		return cachedPairs[offset : offset+size], true
+	//	}
+	//
+	//	return nil, true
+	//}
 
 	return nil, false
 }
