@@ -58,7 +58,11 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 
 	var heap *cache.Heap
 	addedMovies := make(map[string]struct{})
+	uninterestedSet, _ := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.Ctx, ctx.Req.UserId, model.UninterestedTypeTag)
 	for _, kMaxTag := range kMaxTags {
+		if _, ok := uninterestedSet[kMaxTag.TagID]; ok {
+			continue
+		}
 		kMaxTagMovies := tagID2Movies[kMaxTag.TagID]
 		if heap == nil {
 			initNodes := make([]*cache.HeapNode, len(kMaxTagMovies))
