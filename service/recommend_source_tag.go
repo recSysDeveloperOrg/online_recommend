@@ -76,7 +76,7 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 			continue
 		}
 		for _, kMaxTagMovie := range kMaxTagMovies {
-			if _, ok := addedMovies[kMaxTagMovie.TagID]; ok {
+			if _, ok := addedMovies[kMaxTagMovie.MovieID]; ok {
 				continue
 			}
 			weight := getTagWeight(len(kMaxTag.MovieIDs), kMaxTagMovie.TaggedTimes)
