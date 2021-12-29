@@ -58,7 +58,15 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 
 	var heap *cache.Heap
 	addedMovies := make(map[string]struct{})
-	uninterestedSet, _ := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.Ctx, ctx.Req.UserId, model.UninterestedTypeTag)
+	uninterestedSet, err := model.NewUserRecommendationMetaDao().FindUninterestedSet(ctx.Ctx, ctx.Req.UserId, model.UninterestedTypeTag)
+	if err != nil {
+		ctx.ErrCode = BuildErrCode(err, RetReadRepoErr)
+		return
+	}
+	if uninterestedSet == nil {
+		uninterestedSet = make(map[string]struct{})
+	}
+
 	for _, kMaxTag := range kMaxTags {
 		if _, ok := uninterestedSet[kMaxTag.TagID]; ok {
 			continue
