@@ -105,7 +105,14 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 
 	recommendPairs := interface2RecommendPairs(heap.PopValues())
 	sourceTagUserID2RecommendPairCache[ctx.Req.UserId] = recommendPairs
-	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recommendPairs[offset : offset+size]
+	if offset >= int64(len(recommendPairs)) {
+		return
+	}
+	rangeEnd := offset + size
+	if offset + size > int64(len(recommendPairs)) {
+		rangeEnd = int64(len(recommendPairs))
+	}
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_TAG] = recommendPairs[offset : rangeEnd]
 }
 
 func getTagWeight(userTagTimes int, movieTagTimes int64) float64Comparator {
