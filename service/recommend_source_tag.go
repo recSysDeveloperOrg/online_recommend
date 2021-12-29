@@ -103,6 +103,9 @@ func (*RecommendSourceTag) RequestRecommend(ctx *RecommendContext) {
 		}
 	}
 
+	if heap == nil {
+		return
+	}
 	recommendPairs := interface2RecommendPairs(heap.PopValues())
 	sourceTagUserID2RecommendPairCache[ctx.Req.UserId] = recommendPairs
 	if offset >= int64(len(recommendPairs)) {
