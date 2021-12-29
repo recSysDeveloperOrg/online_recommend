@@ -67,5 +67,12 @@ func (*RecommendSourceLog) RequestRecommend(ctx *RecommendContext) {
 			return weight
 		}, MaxRecommend)
 	sourceLogUserID2RecommendPairsCache[ctx.Req.UserId] = recommendPairs
-	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_LOG] = recommendPairs[offset : offset+size]
+	if offset >= int64(len(recommendPairs)) {
+		return
+	}
+	rangeEnd := offset + size
+	if offset + size > int64(len(recommendPairs)) {
+		rangeEnd = int64(len(recommendPairs))
+	}
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_LOG] = recommendPairs[offset : rangeEnd]
 }

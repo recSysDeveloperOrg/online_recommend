@@ -85,7 +85,14 @@ func (r *RecommendSourceSimMat) RequestRecommend(ctx *RecommendContext) {
 			return movieID2Rating[sourceMovieID] * weight
 		}, MaxRecommend)
 	sourceItemCFUserID2RecommendPairCache[ctx.Req.UserId] = recommendPairs
-	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_RATING] = recommendPairs[offset : offset+size]
+	if offset >= int64(len(recommendPairs)) {
+		return
+	}
+	rangeEnd := offset + size
+	if offset + size > int64(len(recommendPairs)) {
+		rangeEnd = int64(len(recommendPairs))
+	}
+	ctx.RecommendMovies[RecommendSourceType_RECOMMEND_SOURCE_TYPE_RATING] = recommendPairs[offset : rangeEnd]
 }
 
 func (*RecommendSourceSimMat) isUserInColdStartState(ctx *RecommendContext) bool {
