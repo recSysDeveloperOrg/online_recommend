@@ -45,7 +45,6 @@ type UninterestedType string
 const (
 	UninterestedTypeMovie = "movie"
 	UninterestedTypeTag   = "tag"
-
 	UninterestedFieldName = "uninterested_%s_ids"
 )
 
